@@ -139,12 +139,20 @@ def run_scrape():
     driver = None  # Initialize as None
     
     try:
-        options = uc.ChromeOptions()
-        driver = uc.Chrome(
-            options=options,
-            version_main=141,
-            use_subprocess=True
-        )
+       options = uc.ChromeOptions()
+
+# Headless mode for GitHub Actions
+options.add_argument('--headless=new')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')
+options.add_argument('--window-size=1920,1080')
+
+driver = uc.Chrome(
+    options=options,
+    version_main=None,  # Auto-detect version
+    use_subprocess=True
+)
         
         print("Chrome WebDriver setup successful!")
         
@@ -384,4 +392,5 @@ def main():
 
 # --- This runs the main function when you execute the script ---
 if __name__ == "__main__":
+
     main()
