@@ -139,20 +139,33 @@ def run_scrape():
     driver = None  # Initialize as None
     
     try:
-       options = uc.ChromeOptions()
+     options = uc.ChromeOptions()
 
 # Headless mode for GitHub Actions
-options.add_argument('--headless=new')
+options.add_argument('--headless')  # Changed from '--headless=new'
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-gpu')
+options.add_argument('--disable-blink-features=AutomationControlled')
 options.add_argument('--window-size=1920,1080')
+options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
-driver = uc.Chrome(
-    options=options,
-    version_main=None,  # Auto-detect version
-    use_subprocess=True
-)
+# Detect if running in GitHub Actions
+import os
+if os.getenv('GITHUB_ACTIONS'):
+    # Running in GitHub Actions - use headless
+    driver = uc.Chrome(
+        options=options,
+        version_main=None,
+        use_subprocess=False  # Changed to False for GitHub Actions
+    )
+else:
+    # Running locally
+    driver = uc.Chrome(
+        options=options,
+        version_main=141,
+        use_subprocess=True
+    )
         
         print("Chrome WebDriver setup successful!")
         
@@ -394,3 +407,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
