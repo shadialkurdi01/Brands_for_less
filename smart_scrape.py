@@ -64,29 +64,46 @@ def save_csv_locally(products):
     print(f"✅ Saved results to {CSV_PATH}")
 
 def upload_to_drive():
-    """Upload results to Google Drive using Service Account."""
-    creds_json = os.getenv("GOOGLE_CREDENTIALS")
-    folder_id = os.getenv("DRIVE_FOLDER_ID")
-    if not creds_json or not folder_id:
-        print("⚠️ Missing GOOGLE_CREDENTIALS or DRIVE_FOLDER_ID — skipping upload.")
+    import json
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build
+    from googleapiclient.http import MediaFileUpload
+    import os
+
+    print("📤 Uploading to Google Drive...")
+
+    creds_path = "google_creds.json"
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+
+    if not creds_json:
+        print("⚠️ No GOOGLE_CREDENTIALS found in environment.")
         return
 
-    # Save credentials file locally
-    creds_path = "service_account.json"
-    with open(creds_path, "w") as f:
-        f.write(creds_json)
-
     try:
-        creds = service_account.Credentials.from_service_account_file(creds_path)
+        creds_data = json.loads(creds_json)
+        # Save credentials temporarily
+        with open(creds_path, "w") as f:
+            json.dump(creds_data, f)
+
+        creds = Credentials.from_authorized_user_file(creds_path, scopes=["https://www.googleapis.com/auth/drive"])
         service = build("drive", "v3", credentials=creds)
-        file_metadata = {"name": os.path.basename(CSV_PATH), "parents": [folder_id]}
-        media = MediaFileUpload(CSV_PATH, mimetype="text/csv")
-        file = service.files().create(
-            body=file_metadata, media_body=media, fields="id"
-        ).execute()
-        print(f"✅ Uploaded to Google Drive (File ID: {file.get('id')})")
+
+        # Upload the latest CSV file
+        results_dir = "results"
+        latest_file = max(
+            [os.path.join(results_dir, f) for f in os.listdir(results_dir) if f.endswith(".csv")],
+            key=os.path.getctime,
+        )
+
+        file_metadata = {"name": os.path.basename(latest_file)}
+        media = MediaFileUpload(latest_file, mimetype="text/csv")
+
+        service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+        print("✅ File uploaded successfully!")
+
     except Exception as e:
         print(f"⚠️ Google Drive upload failed: {e}")
+
 
 def main():
     today_date = datetime.date.today()
@@ -120,3 +137,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
