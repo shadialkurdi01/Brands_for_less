@@ -1,3 +1,6 @@
+import os
+import undetected_chromedriver as uc
+
 def run_scrape():
     """Scrapes all pages and returns a list of [Name, Full_Link, Image_URL, Base_Link, Price]"""
     print("Setting up Chrome WebDriver...")
@@ -21,14 +24,12 @@ def run_scrape():
 
         # Detect if running in GitHub Actions
         if os.getenv('GITHUB_ACTIONS'):
-            # Running in GitHub Actions - use headless
             driver = uc.Chrome(
                 options=options,
                 version_main=None,
-                use_subprocess=False  # Changed to False for GitHub Actions
+                use_subprocess=False
             )
         else:
-            # Running locally
             driver = uc.Chrome(
                 options=options,
                 version_main=141,
@@ -52,12 +53,11 @@ def run_scrape():
         print(f"A critical error occurred during scraping: {e}")
 
     finally:
-        # --- Cleanup ---
         if driver:
             try:
                 driver.quit()
             except Exception:
-                pass  # Ignore errors when closing
+                pass
             try:
                 del driver
             except Exception:
@@ -70,8 +70,9 @@ def run_scrape():
 
     return unique_products_list
 
-import os
 
-print("Current working directory:", os.getcwd())
-print("Files in directory:", os.listdir())
-
+# ✅ Safe debug / execution section
+if __name__ == "__main__":
+    print("Current working directory:", os.getcwd())
+    print("Files in directory:", os.listdir())
+    run_scrape()
