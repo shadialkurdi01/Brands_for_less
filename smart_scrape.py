@@ -120,7 +120,7 @@ def run_scrape():
             print(f"Scraping page {page_num}...")
             url = f"{BASE_URL}?page={page_num}"
             driver.get(url)
-            time.sleep(3)
+            time.sleep(5)
 
             products = driver.find_elements(By.CSS_SELECTOR, PRODUCT_CARD_SELECTOR)
             if not products:
@@ -189,4 +189,5 @@ if __name__ == "__main__":
     print(f"📂 Current working directory: {os.getcwd()}")
     print(f"📄 Files in directory: {os.listdir()}")
     main()
+
 
