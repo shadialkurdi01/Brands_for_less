@@ -131,13 +131,32 @@ def download_and_parse_csv(service, file_id):
 # --- Scraping Function ---
 def run_scrape():
     """Scrapes all pages and returns a list of [Name, Full_Link, Image_URL, Base_Link, Price]"""
+    import undetected_chromedriver as uc
+    import os
+
     print("Setting up Chrome WebDriver...")
 
     driver = None
+
     try:
         options = uc.ChromeOptions()
-        driver = uc.Chrome(options=options, version_main=141, use_subprocess=True)
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-software-rasterizer")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument(
+            "--user-agent=Mozilla/5.0 (X11; Linux x86_64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
+
+        # ✅ Works on both local and GitHub Actions
+        driver = uc.Chrome(options=options, use_subprocess=True)
         print("Chrome WebDriver setup successful!")
+
     except Exception as e:
         print(f"Error: Could not set up Chrome Driver: {e}")
         return []
@@ -146,24 +165,21 @@ def run_scrape():
 
     try:
         for page_num in range(1, TOTAL_PAGES + 1):
-            # Example scraping placeholder
-            # Replace with your actual scraping logic
+            # --- Your scraping logic goes here ---
             print(f"Scraping page {page_num}...")
-            # driver.get(f"{BASE_URL}?page={page_num}")
-            time.sleep(0.5)
-            # (Scraping code would go here)
-            pass
+            pass  # placeholder
     except Exception as e:
         print(f"A critical error occurred during scraping: {e}")
+
     finally:
         if driver:
             try:
                 driver.quit()
-            except (OSError, Exception):
+            except Exception:
                 pass
             try:
                 del driver
-            except:
+            except Exception:
                 pass
 
     print(f"\nDeduplicating {len(all_products_data)} total products...")
@@ -173,6 +189,11 @@ def run_scrape():
 
     return unique_products_list
 
+
+# Debug info
+import os
+print("📂 Current working directory:", os.getcwd())
+print("📄 Files in directory:", os.listdir())
 
 # --- CSV Saving Function ---
 def save_csv_locally(product_list, file_name):
@@ -319,3 +340,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
