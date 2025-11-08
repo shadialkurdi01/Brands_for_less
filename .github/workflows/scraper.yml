@@ -1,0 +1,54 @@
+name: Daily Product Scraper
+
+on:
+  schedule:
+    # Runs at 6:00 AM UTC (9:00 AM Riyadh time) every day
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+        google-chrome --version
+        
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Setup Google credentials
+      run: |
+        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
+        echo '${{ secrets.GOOGLE_TOKEN }}' > token.json
+        
+    - name: Run scraper
+      env:
+        DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+      run: |
+        python smart_scrape.py
+        
+    - name: Upload results as artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: scrape-results-${{ github.run_number }}
+        path: |
+          *.csv
+          *.html
+        retention-days: 30
