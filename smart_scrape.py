@@ -288,11 +288,17 @@ def save_html_locally(product_list, file_name):
         print(f"Error saving HTML file: {e}")
 
 # --- Main Function ---
+
+# Ensure results directory exists
+os.makedirs("results", exist_ok=True)
+
 def main():
     today_date = datetime.date.today()
+
     
-    today_filename_csv = f"{today_date.isoformat()}-products.csv"
-    new_items_filename_html = f"{today_date.isoformat()}-NEWLY-ADDED.html"
+today_filename_csv = f"results/{today_date.isoformat()}-products.csv"
+new_items_filename_html = f"results/{today_date.isoformat()}-NEWLY-ADDED.html"
+
 
     # --- 1. RUN THE SCRAPE ---
     print(f"Starting scrape for {today_date.isoformat()}...")
@@ -386,3 +392,4 @@ def main():
 # --- This runs the main function when you execute the script ---
 if __name__ == "__main__":
     main()
+
