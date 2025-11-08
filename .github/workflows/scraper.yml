@@ -1,60 +1,43 @@
-name: Daily Product Scraper
+name: Daily Update Scrape
 
 on:
+  workflow_dispatch:  # allows manual run
   schedule:
-    # Runs at 6:00 AM UTC (9:00 AM Riyadh time) every day
-    - cron: '0 6 * * *'
-  workflow_dispatch:
+    - cron: "0 7 * * *"  # runs every day at 07:00 UTC
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        
-    - name: Install Chrome
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y wget unzip
-        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-        google-chrome --version
-        
-    - name: Install Python dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Google credentials
-      run: |
-        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
-        echo '${{ secrets.GOOGLE_TOKEN }}' > token.json
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Run scraper
-      env:
-        DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
-      run: |
-        echo "Running smart_scrape.py..."
-        python smart_scrape.py
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
 
-    - name: List files before upload
-      run: |
-        echo "---- ls -R output ----"
-        ls -R
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install undetected-chromedriver==3.5.5 selenium webdriver-manager google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-    - name: Upload results as artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: scrape-results-${{ github.run_number }}
-        path: |
-          results/**/*.csv
-          results/**/*.html
-        retention-days: 30
+      - name: Run scraper
+        env:
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: |
+          echo "Running smart_scrape.py..."
+          python3 smart_scrape.py
+
+      - name: Upload results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-results
+          path: results/*.csv
