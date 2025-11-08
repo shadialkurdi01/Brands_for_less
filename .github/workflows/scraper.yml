@@ -2,70 +2,49 @@ name: Daily Product Scraper
 
 on:
   schedule:
-    # Runs at 6:00 AM UTC (9:00 AM Riyadh time) every day
-    - cron: '0 6 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+    - cron: "0 6 * * *"  # runs every day at 6 AM UTC
+  workflow_dispatch:      # allows manual trigger
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.10"
 
       - name: Install Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-          google-chrome --version
+          sudo apt-get install -y wget
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install -y ./google-chrome-stable_current_amd64.deb
 
-      - name: Install Python dependencies
+      - name: Install dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Setup Google credentials
+      - name: Write Google credentials from secret
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
-          echo '${{ secrets.GOOGLE_TOKEN }}' > token.json
-
-      # Ensure results directory exists (safe guard — smart_scrape.py already creates it)
-      - name: Ensure results directory
-        run: |
-          mkdir -p results
+          echo "$GOOGLE_CREDENTIALS" > credentials.json
 
       - name: Run scraper
         env:
           DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
-        run: |
-          echo "Running smart_scrape.py..."
-          python smart_scrape.py
-          echo "Scraper finished execution."
+        run: python smart_scrape.py
 
-      - name: List files before upload
-        if: always()
-        run: |
-          echo "---- ls -R output ----"
-          ls -R
-
-      - name: Upload results as artifacts
-        if: always()
+      - name: Upload results as artifact
         uses: actions/upload-artifact@v4
         with:
-          # artifact name
-          name: scrape-results-${{ github.run_number }}
-          # match CSV/HTML in results/ (also match any nested subfolders)
+          name: scrape-results
           path: |
-            results/*.csv
-            results/**/*.csv
-            results/*.html
-            results/**/*.html
-          retention-days: 30
+            results/**
+            *.csv
+            *.html
