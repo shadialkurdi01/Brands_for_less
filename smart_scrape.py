@@ -19,7 +19,7 @@ BASE_URL = "https://www.brandsforless.com/en-sa/men/new-arrivals/"
 TOTAL_PAGES = 99
 DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID", "1z9oGLaFXYZTZ9i51AvICsEggrdJsijlG")
 
-PRODUCT_CARD_SELECTOR = "#product-listing ul li a"
+PRODUCT_CARD_SELECTOR = "div.product-card a.product-link"
 PRODUCT_NAME_SELECTOR = "h1"
 PRODUCT_IMAGE_SELECTOR = "img"
 PRODUCT_PRICE_SELECTOR = "span.price.red"
@@ -189,3 +189,4 @@ if __name__ == "__main__":
     print(f"📂 Current working directory: {os.getcwd()}")
     print(f"📄 Files in directory: {os.listdir()}")
     main()
+
