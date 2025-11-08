@@ -37,17 +37,35 @@ jobs:
           echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
           echo '${{ secrets.GOOGLE_TOKEN }}' > token.json
 
+      # Ensure results directory exists (safe guard — smart_scrape.py already creates it)
+      - name: Ensure results directory
+        run: |
+          mkdir -p results
+
       - name: Run scraper
         env:
           DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
         run: |
+          echo "Running smart_scrape.py..."
           python smart_scrape.py
+          echo "Scraper finished execution."
 
       - name: List files before upload
-        run: ls -R
+        if: always()
+        run: |
+          echo "---- ls -R output ----"
+          ls -R
 
       - name: Upload results as artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
+          # artifact name
           name: scrape-results-${{ github.run_number }}
+          # match CSV/HTML in results/ (also match any nested subfolders)
+          path: |
+            results/*.csv
+            results/**/*.csv
+            results/*.html
+            results/**/*.html
+          retention-days: 30
