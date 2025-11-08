@@ -1,0 +1,7 @@
+selenium
+   undetected-chromedriver
+   webdriver-manager
+   google-auth-oauthlib
+   google-auth-httplib2
+   google-api-python-client
+   setuptools
