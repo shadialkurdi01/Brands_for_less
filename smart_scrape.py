@@ -69,3 +69,9 @@ def run_scrape():
     print(f"After deduplication: {len(unique_products_list)} unique products")
 
     return unique_products_list
+
+import os
+
+print("Current working directory:", os.getcwd())
+print("Files in directory:", os.listdir())
+
