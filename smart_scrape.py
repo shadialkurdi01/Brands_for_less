@@ -39,9 +39,10 @@ def scrape_page(driver, url):
     driver.get(url)
     driver.implicitly_wait(10)
     time.sleep(5)
-    with open("page_debug.html", "w", encoding="utf-8") as f:
+    debug_path = os.path.join(RESULTS_DIR, "page_debug.html")
+    with open(debug_path, "w", encoding="utf-8") as f:
         f.write(driver.page_source)
-    print("✅ Saved page_debug.html for inspection.")
+    print(f"✅ Saved {debug_path} for inspection.")
     elements = driver.find_elements(By.CSS_SELECTOR, PRODUCT_CARD_SELECTOR)
     products = []
     for el in elements:
@@ -137,4 +138,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
