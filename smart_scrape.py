@@ -17,7 +17,7 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 CSV_PATH = os.path.join(RESULTS_DIR, "products.csv")
 
 # Flexible selector (will adjust once you upload page_debug.html)
-PRODUCT_CARD_SELECTOR = "a[href*='/p/'], div.product-item a, li.product a"
+PRODUCT_CARD_SELECTOR = "a[href*='brandsforless.com/en-ae/p/']"
 
 def setup_chrome_driver():
     """Setup Chrome for GitHub Actions."""
@@ -128,15 +128,18 @@ def main():
         if page > 30:
             break
 
-    driver.quit()
-    print(f"Deduplicating {len(all_products)} total products...")
-    unique = {p["url"]: p for p in all_products}.values()
-    print(f"After deduplication: {len(unique)} unique products")
+    if not unique:
+        print("⚠️ No products found. Saving empty CSV for debugging.")
+        save_csv_locally([{"name": "No products found", "url": "N/A"}])
+    else:
+        save_csv_locally(list(unique))
+        
     save_csv_locally(list(unique))
     upload_to_drive()
     print("✅ Scrape finished successfully.")
 
 if __name__ == "__main__":
     main()
+
 
 
