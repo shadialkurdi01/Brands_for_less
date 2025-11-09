@@ -38,6 +38,7 @@ jobs:
 
       - name: Upload results as artifact
         uses: actions/upload-artifact@v4
+        if: always()  # Upload even if no products found
         with:
           name: scrape-results
-          path: results/*.csv
+          path: results/  # Upload entire folder, not just CSV
